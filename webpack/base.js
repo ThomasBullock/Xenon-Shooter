@@ -12,6 +12,11 @@ module.exports = {
   devtool: "eval-source-map", // Each module is executed with
   // eval() and a SourceMap is added as a DataUrl to the eval().     // Initially it is slow, but it provides fast rebuild speed and
   // yields real files
+  resolve: {
+    alias: {
+      Assets: path.resolve(__dirname, "src/assets/"),
+    },
+  },
   module: {
     rules: [
       {
