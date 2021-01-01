@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { getRandomArbitrary } from "../helpers/helpers.js";
 
 class Entity extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, key, type) {
@@ -10,6 +11,32 @@ class Entity extends Phaser.GameObjects.Sprite {
     this.setData("type", type);
     this.setData("isDead", false);
     this.setData("direction", null);
+  }
+
+  explode(val) {
+    new Explosion(this.scene, this.x, this.y, "explosion");
+    this.destroy();
+  }
+}
+
+class Explosion extends Phaser.GameObjects.Sprite {
+  constructor(scene, x, y, key) {
+    super(scene, x, y, key);
+
+    this.scene = scene;
+    this.scene.add.existing(this);
+    this.scene.physics.world.enableBody(this, 0);
+    this.setScale(getRandomArbitrary(0.8, 1));
+    this.play("explosion");
+  }
+
+  create() {
+    this.on(
+      "animationcomplete-explosion",
+      function (currentAnim, currentFrame, sprite) {
+        sprite.destroy();
+      }
+    );
   }
 }
 

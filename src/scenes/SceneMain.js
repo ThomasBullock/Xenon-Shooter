@@ -6,6 +6,8 @@ import {
   CarrierShip,
 } from "../sprites/Entities.js";
 
+import { FX, PROJECTILES } from "../helpers/constants.js";
+
 export default class SceneMain extends Phaser.Scene {
   constructor() {
     super({ key: "SceneMain" });
@@ -13,14 +15,19 @@ export default class SceneMain extends Phaser.Scene {
   preload() {
     this.load.image("sprBg0", "src/assets/images/sprBg0.png");
 
-    this.load.spritesheet(
-      "sprExplosion",
-      "src/assets/images/sprExplosion.png",
-      {
-        frameWidth: 32,
-        frameHeight: 32,
-      }
-    );
+    PROJECTILES.forEach((item) => {
+      this.load.spritesheet(item.key, `src/assets/images/${item.file}`, {
+        frameWidth: item.frame[0],
+        frameHeight: item.frame[1],
+      });
+    });
+
+    FX.forEach((item) => {
+      this.load.spritesheet(item.key, `src/assets/images/${item.file}`, {
+        frameWidth: item.frame[0],
+        frameHeight: item.frame[1],
+      });
+    });
 
     this.load.spritesheet("sprEnemy0", "src/assets/images/ship_1.png", {
       frameWidth: 190,
@@ -37,14 +44,6 @@ export default class SceneMain extends Phaser.Scene {
       frameHeight: 16,
     });
 
-    this.load.spritesheet(
-      "sprLaserEnemy0",
-      "src/assets/images/bullet_pink_strip8.png",
-      {
-        frameWidth: 48,
-        frameHeight: 51,
-      }
-    );
     this.load.image("sprLaserPlayer", "src/assets/images/sprLaserPlayer.png");
 
     this.load.spritesheet(
@@ -66,6 +65,24 @@ export default class SceneMain extends Phaser.Scene {
     console.log("isLargeScreen", isLargeScreen);
     this.add.image(480, 640, "sprBg0");
 
+    FX.forEach((item) => {
+      this.anims.create({
+        key: item.key,
+        frames: this.anims.generateFrameNumbers(item.key),
+        frameRate: 20,
+        repeat: item.repeat,
+      });
+    });
+
+    PROJECTILES.forEach((item) => {
+      this.anims.create({
+        key: item.key,
+        frames: this.anims.generateFrameNumbers(item.key),
+        frameRate: 20,
+        repeat: item.repeat,
+      });
+    });
+
     this.anims.create({
       key: "sprEnemy0",
       frames: this.anims.generateFrameNumbers("sprEnemy0"),
@@ -81,24 +98,10 @@ export default class SceneMain extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: "sprLaserEnemy0",
-      frames: this.anims.generateFrameNumbers("sprLaserEnemy0"),
-      frameRate: 20,
-      repeat: -1,
-    });
-
-    this.anims.create({
       key: "sprEnemy2",
       frames: this.anims.generateFrameNumbers("sprEnemy2"),
       frameRate: 20,
       repeat: -1,
-    });
-
-    this.anims.create({
-      key: "sprExplosion",
-      frames: this.anims.generateFrameNumbers("sprExplosion"),
-      frameRate: 20,
-      repeat: 0,
     });
 
     this.anims.create({
@@ -244,6 +247,21 @@ export default class SceneMain extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+
+    this.physics.add.collider(
+      this.playerLasers,
+      this.enemies,
+      function (playerLaser, enemy) {
+        if (enemy) {
+          if (enemy.onDestroy !== undefined) {
+            enemy.onDestroy();
+          }
+
+          enemy.explode(true);
+          playerLaser.destroy();
+        }
+      }
+    );
   }
 
   update() {
@@ -278,7 +296,6 @@ export default class SceneMain extends Phaser.Scene {
 
     if (this.keySpace.isDown) {
       this.player.setData("isShooting", true);
-      console.log(this.playerLasers.getChildren().length);
     } else {
       this.player.setData(
         "timerShootTick",
