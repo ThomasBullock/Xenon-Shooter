@@ -69,7 +69,7 @@ export default class SceneMain extends Phaser.Scene {
       this.anims.create({
         key: item.key,
         frames: this.anims.generateFrameNumbers(item.key),
-        frameRate: 20,
+        frameRate: item.frameRate ? item.frameRate : 20,
         repeat: item.repeat,
       });
     });
@@ -78,7 +78,7 @@ export default class SceneMain extends Phaser.Scene {
       this.anims.create({
         key: item.key,
         frames: this.anims.generateFrameNumbers(item.key),
-        frameRate: 20,
+        frameRate: item.frameRate ? item.frameRate : 20,
         repeat: item.repeat,
       });
     });
@@ -262,48 +262,54 @@ export default class SceneMain extends Phaser.Scene {
         }
       }
     );
+
+    this.physics.add.overlap(
+      this.player,
+      this.enemies,
+      function (player, enemy) {
+        if (!player.getData("isDead") && !enemy.getData("isDead")) {
+          player.explode(false);
+          enemy.explode(true);
+        }
+      }
+    );
   }
 
   update() {
-    this.player.update();
-    // if (this.cursorKeys.left._justDown) {
-    //   console.log("leftty");
-    //   this.player.bankLeft();
-    // } else if (this.cursorKeys.right._justDown) {
-    //   this.player.bankRight();
-    // }
+    if (!this.player.getData("isDead")) {
+      this.player.update();
 
-    if (this.cursorKeys.up.isDown) {
-      this.player.moveUp();
-    } else if (this.cursorKeys.down.isDown) {
-      this.player.moveDown();
+      if (this.cursorKeys.up.isDown) {
+        this.player.moveUp();
+      } else if (this.cursorKeys.down.isDown) {
+        this.player.moveDown();
+      }
+
+      if (this.cursorKeys.left.isDown) {
+        this.player.moveLeft();
+      } else if (this.cursorKeys.right.isDown) {
+        this.player.moveRight();
+      }
+
+      if (
+        this.cursorKeys.up.isUp ||
+        this.cursorKeys.down.isUp ||
+        this.cursorKeys.left.isUp ||
+        this.cursorKeys.right.isUp
+      ) {
+        this.player.resetMovement();
+      }
+
+      if (this.keySpace.isDown) {
+        this.player.setData("isShooting", true);
+      } else {
+        this.player.setData(
+          "timerShootTick",
+          this.player.getData("timerShootDelay") - 1
+        );
+        this.player.setData("isShooting", false);
+      }
     }
-
-    if (this.cursorKeys.left.isDown) {
-      this.player.moveLeft();
-    } else if (this.cursorKeys.right.isDown) {
-      this.player.moveRight();
-    }
-
-    if (
-      this.cursorKeys.up.isUp ||
-      this.cursorKeys.down.isUp ||
-      this.cursorKeys.left.isUp ||
-      this.cursorKeys.right.isUp
-    ) {
-      this.player.resetMovement();
-    }
-
-    if (this.keySpace.isDown) {
-      this.player.setData("isShooting", true);
-    } else {
-      this.player.setData(
-        "timerShootTick",
-        this.player.getData("timerShootDelay") - 1
-      );
-      this.player.setData("isShooting", false);
-    }
-
     for (var i = 0; i < this.enemies.getChildren().length; i++) {
       var enemy = this.enemies.getChildren()[i];
 

@@ -31,5 +31,6 @@ export const FX = [
     file: "explosion.png",
     frame: [256, 248],
     repeat: 0,
+    frameRate: 35,
   },
 ];
