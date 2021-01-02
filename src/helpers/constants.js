@@ -25,6 +25,21 @@ export const PROJECTILES = [
   },
 ];
 
+export const ENEMIES = [
+  {
+    key: "enemy_2",
+    file: "ship_2.png",
+    frame: [218, 242],
+    repeat: -1,
+  },
+  {
+    key: "enemy_2_shoot",
+    file: "ship_2_shoot.png",
+    frame: [294, 272],
+    repeat: -1,
+  },
+];
+
 export const FX = [
   {
     key: "explosion",

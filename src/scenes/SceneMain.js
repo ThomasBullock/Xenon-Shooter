@@ -6,7 +6,7 @@ import {
   CarrierShip,
 } from "../sprites/Entities.js";
 
-import { FX, PROJECTILES } from "../helpers/constants.js";
+import { FX, PROJECTILES, ENEMIES } from "../helpers/constants.js";
 
 export default class SceneMain extends Phaser.Scene {
   constructor() {
@@ -23,6 +23,13 @@ export default class SceneMain extends Phaser.Scene {
     });
 
     FX.forEach((item) => {
+      this.load.spritesheet(item.key, `src/assets/images/${item.file}`, {
+        frameWidth: item.frame[0],
+        frameHeight: item.frame[1],
+      });
+    });
+
+    ENEMIES.forEach((item) => {
       this.load.spritesheet(item.key, `src/assets/images/${item.file}`, {
         frameWidth: item.frame[0],
         frameHeight: item.frame[1],
@@ -75,6 +82,15 @@ export default class SceneMain extends Phaser.Scene {
     });
 
     PROJECTILES.forEach((item) => {
+      this.anims.create({
+        key: item.key,
+        frames: this.anims.generateFrameNumbers(item.key),
+        frameRate: item.frameRate ? item.frameRate : 20,
+        repeat: item.repeat,
+      });
+    });
+
+    ENEMIES.forEach((item) => {
       this.anims.create({
         key: item.key,
         frames: this.anims.generateFrameNumbers(item.key),
