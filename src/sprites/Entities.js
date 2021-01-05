@@ -152,6 +152,10 @@ export class ChaserShip extends Entity {
     this.play("sprEnemy1");
   }
 
+  onDestroy() {
+    this.body.setVelocity(0, 0);
+  }
+
   update() {
     if (!this.getData("isDead") && this.scene.player) {
       if (
@@ -216,6 +220,10 @@ export class CarrierShip extends Entity {
     this.setScale(0.5);
     this.body.velocity.y = Phaser.Math.Between(50, 100);
   }
+
+  onDestroy() {
+    this.body.setVelocity(0, 0);
+  }
 }
 
 export class EnemyLaser extends Entity {
@@ -225,5 +233,41 @@ export class EnemyLaser extends Entity {
     this.flipY = true;
     this.play("sprLaserEnemy0");
     this.body.velocity.y = 200;
+  }
+}
+
+export class ScrollingBackground {
+  constructor(scene, key, velocityY) {
+    this.scene = scene;
+    this.key = key;
+    this.velocityY = velocityY;
+    this.layers = this.scene.add.group();
+
+    this.createLayers();
+  }
+
+  createLayers() {
+    for (var i = 0; i < 2; i++) {
+      // creating two backgrounds will allow a continuous scroll
+      var layer = this.scene.add.sprite(0, 0, this.key);
+      layer.y = layer.displayHeight * i;
+      var flipX = Phaser.Math.Between(0, 10) >= 5 ? -1 : 1;
+      var flipY = Phaser.Math.Between(0, 10) >= 5 ? -1 : 1;
+      layer.setScale(flipX * 3.4, flipY * 2.9);
+      layer.setDepth(-5 - (i - 1));
+      this.scene.physics.world.enableBody(layer, 0);
+      layer.body.velocity.y = this.velocityY;
+
+      this.layers.add(layer);
+    }
+  }
+
+  update() {
+    if (this.layers.getChildren()[0].y > 0) {
+      for (var i = 0; i < this.layers.getChildren().length; i++) {
+        var layer = this.layers.getChildren()[i];
+        layer.y = -layer.displayHeight + layer.displayHeight * i;
+      }
+    }
   }
 }

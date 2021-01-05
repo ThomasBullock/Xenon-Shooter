@@ -4,6 +4,7 @@ import {
   ChaserShip,
   GunShip,
   CarrierShip,
+  ScrollingBackground,
 } from "../sprites/Entities.js";
 
 import { FX, PROJECTILES, ENEMIES } from "../helpers/constants.js";
@@ -197,10 +198,17 @@ export default class SceneMain extends Phaser.Scene {
       laser: this.sound.add("sndLaser"),
     };
 
+    this.backgrounds = [];
+    for (var i = 0; i < 5; i++) {
+      // create five scrolling backgrounds
+      var bg = new ScrollingBackground(this, "sprBg0", i * 10);
+      this.backgrounds.push(bg);
+    }
+
     this.player = new Player(
       this,
       this.game.config.width * 0.5,
-      this.game.config.height * 0.5,
+      this.game.config.height * 0.75,
       "sprPlayer"
     );
 
@@ -275,6 +283,18 @@ export default class SceneMain extends Phaser.Scene {
 
           enemy.explode(true);
           playerLaser.destroy();
+        }
+      }
+    );
+
+    this.physics.add.collider(
+      this.enemyLasers,
+      this.player,
+      function (enemyLaser, player) {
+        console.log(enemyLaser, player);
+        enemyLaser.destroy();
+        if (!player.getData("isDead")) {
+          player.explode(false);
         }
       }
     );
@@ -377,6 +397,10 @@ export default class SceneMain extends Phaser.Scene {
           laser.destroy();
         }
       }
+    }
+
+    for (var i = 0; i < this.backgrounds.length; i++) {
+      this.backgrounds[i].update();
     }
   }
 
