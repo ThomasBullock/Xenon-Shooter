@@ -49,3 +49,62 @@ export const FX = [
     frameRate: 35,
   },
 ];
+
+export const LEVELS = [
+  [
+    {
+      sprite: "GUNSHIP",
+      x: 0.3,
+      speed: 50,
+      time: 2000,
+    },
+    {
+      sprite: "GUNSHIP",
+      x: 0.5,
+      speed: 50,
+      time: 3000,
+    },
+    {
+      sprite: "GUNSHIP",
+      x: 0.7,
+      speed: 50,
+      time: 4000,
+    },
+    {
+      sprite: "CHASER_SHIP",
+      x: 0.1,
+      speed: 60,
+      time: 6000,
+    },
+    {
+      sprite: "CHASER_SHIP",
+      x: 0.9,
+      speed: 70,
+      time: 7000,
+    },
+    {
+      sprite: "GUNSHIP",
+      x: 0.6,
+      speed: 50,
+      time: 10000,
+    },
+    {
+      sprite: "GUNSHIP",
+      x: 0.4,
+      speed: 50,
+      time: 11000,
+    },
+    {
+      sprite: "GUNSHIP",
+      x: 0.2,
+      speed: 50,
+      time: 12000,
+    },
+    {
+      sprite: "CARRIER_SHIP",
+      x: 0.5,
+      speed: 60,
+      time: 15000,
+    },
+  ],
+];

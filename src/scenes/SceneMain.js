@@ -7,7 +7,7 @@ import {
   ScrollingBackground,
 } from "../sprites/Entities.js";
 
-import { FX, PROJECTILES, ENEMIES } from "../helpers/constants.js";
+import { FX, PROJECTILES, ENEMIES, LEVELS } from "../helpers/constants.js";
 
 export default class SceneMain extends Phaser.Scene {
   constructor() {
@@ -52,7 +52,7 @@ export default class SceneMain extends Phaser.Scene {
       frameHeight: 16,
     });
 
-    this.load.image("sprLaserPlayer", "src/assets/images/sprLaserPlayer.png");
+    // this.load.image("sprLaserPlayer", "src/assets/images/sprLaserPlayer.png");
 
     this.load.spritesheet(
       "sprPlayer",
@@ -70,7 +70,7 @@ export default class SceneMain extends Phaser.Scene {
   }
   create() {
     var isLargeScreen = this.registry.get("isLargeScreen");
-    console.log("isLargeScreen", isLargeScreen);
+    // console.log("isLargeScreen", isLargeScreen);
     this.add.image(480, 640, "sprBg0");
 
     FX.forEach((item) => {
@@ -127,7 +127,33 @@ export default class SceneMain extends Phaser.Scene {
         prefix: "",
         suffix: "",
         zeroPad: 0,
-        frames: [8, 9, 8, 7],
+        frames: [8],
+      }),
+      frameRate: 5,
+      repeat: -1,
+      duration: null,
+    });
+
+    this.anims.create({
+      key: "sprPlayerHardLeft",
+      frames: this.anims.generateFrameNames("sprPlayer", {
+        prefix: "",
+        suffix: "",
+        zeroPad: 0,
+        frames: [15],
+      }),
+      frameRate: 5,
+      repeat: -1,
+      duration: null,
+    });
+
+    this.anims.create({
+      key: "sprPlayerHardRight",
+      frames: this.anims.generateFrameNames("sprPlayer", {
+        prefix: "",
+        suffix: "",
+        zeroPad: 0,
+        frames: [1],
       }),
       frameRate: 5,
       repeat: -1,
@@ -140,10 +166,10 @@ export default class SceneMain extends Phaser.Scene {
         prefix: "",
         suffix: "",
         zeroPad: 0,
-        frames: [8, 9, 10, 11, 12, 13, 14, 15],
+        frames: [8, 9, 10, 11, 12, 13],
       }),
       startFrame: 8,
-      frameRate: 20,
+      frameRate: 25,
       repeat: 0,
       duration: null,
     });
@@ -154,10 +180,10 @@ export default class SceneMain extends Phaser.Scene {
         prefix: "",
         suffix: "",
         zeroPad: 0,
-        frames: [14, 13, 12, 11, 10, 9],
+        frames: [12, 11, 10, 9],
       }),
-      startFrame: 14,
-      frameRate: 20,
+      startFrame: 12,
+      frameRate: 25,
       repeat: 0,
       duration: null,
     });
@@ -168,10 +194,10 @@ export default class SceneMain extends Phaser.Scene {
         prefix: "",
         suffix: "",
         zeroPad: 0,
-        frames: [8, 7, 6, 5, 4, 3, 2, 1],
+        frames: [8, 7, 6, 5, 4, 3],
       }),
       startFrame: 8,
-      frameRate: 20,
+      frameRate: 25,
       repeat: 0,
       duration: null,
     });
@@ -182,10 +208,10 @@ export default class SceneMain extends Phaser.Scene {
         prefix: "",
         suffix: "",
         zeroPad: 0,
-        frames: [2, 3, 4, 5, 6, 7, 2],
+        frames: [4, 5, 6, 7, 8],
       }),
-      startFrame: 2,
-      frameRate: 20,
+      startFrame: 4,
+      frameRate: 25,
       repeat: 0,
       duration: null,
     });
@@ -196,6 +222,16 @@ export default class SceneMain extends Phaser.Scene {
         this.sound.add("sndExplode1"),
       ],
       laser: this.sound.add("sndLaser"),
+    };
+
+    this.levels = LEVELS[0];
+
+    // this.time = 0;
+
+    this.enemyEntities = {
+      GUNSHIP: GunShip,
+      CHASER_SHIP: ChaserShip,
+      CARRIER_SHIP: CarrierShip,
     };
 
     this.backgrounds = [];
@@ -213,23 +249,65 @@ export default class SceneMain extends Phaser.Scene {
     );
 
     /* Keyboard Input */
-    this.cursorKeys = this.input.keyboard.createCursorKeys();
+    // this.cursorKeys = this.input.keyboard.createCursorKeys();
+
+    this.input.keyboard.on("keydown-" + "LEFT", (event) => {
+      if (
+        this.player.getData("isBankingLeft") ||
+        this.player.getData("isMoving") === "left"
+      ) {
+        return;
+      }
+      // start banking left animation
+      this.player.bankLeft();
+      // then set isMoving Left
+    });
+
+    this.player.on(
+      "animationcomplete-sprPlayerBankLeft",
+      (currentAnim, currentFrame, sprite) => {
+        this.player.setData("isBankingLeft", false);
+        this.player.setData("isMoving", "left");
+        // sprite.play("sprPlayer");
+      }
+    );
+
+    this.input.keyboard.on("keyup-" + "LEFT", (event) => {
+      console.log("bankingLeft " + this.player.getData("isBankingLeft"));
+      console.log("bankingRight " + this.player.getData("isBankingRight"));
+      if (!this.player.getData("isBankingRight")) {
+        this.player.straighten();
+      }
+    });
+
+    this.input.keyboard.on("keydown-" + "RIGHT", (event) => {
+      if (
+        this.player.getData("isBankingRight") ||
+        this.player.getData("isMoving") === "right"
+      ) {
+        console.log("exit");
+        return;
+      }
+      // start banking left animation
+      this.player.bankRight();
+    });
+
+    this.player.on(
+      "animationcomplete-sprPlayerBankRight",
+      (currentAnim, currentFrame, sprite) => {
+        this.player.setData("isBankingRight", false);
+        this.player.setData("isMoving", "right");
+      }
+    );
+
+    this.input.keyboard.on("keyup-" + "RIGHT", (event) => {
+      if (!this.player.getData("isBankingLeft")) {
+        this.player.straighten();
+      }
+    });
+
     this.keySpace = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
-
-    this.player.on(
-      "animationcomplete-sprPlayerCenterRight",
-      function (currentAnim, currentFrame, sprite) {
-        sprite.play("sprPlayer");
-      }
-    );
-
-    this.player.on(
-      "animationcomplete-sprPlayerCenterLeft",
-      function (currentAnim, currentFrame, sprite) {
-        sprite.play("sprPlayer");
-      }
     );
 
     this.enemies = this.add.group();
@@ -239,35 +317,25 @@ export default class SceneMain extends Phaser.Scene {
     this.time.addEvent({
       delay: 1000,
       callback: function () {
-        var enemy = null;
+        let enemy = null;
 
-        if (Phaser.Math.Between(0, 10) >= 3) {
-          enemy = new GunShip(
+        const event =
+          this.time.now > this.levels[0]?.time ? this.levels.shift() : null;
+        console.log(this.time.now);
+        if (event) {
+          enemy = new this.enemyEntities[event.sprite](
             this,
-            Phaser.Math.Between(0, this.game.config.width),
-            0
+            this.game.config.width * event.x,
+            0,
+            event.speed
           );
-        } else if (Phaser.Math.Between(0, 10) >= 5) {
-          if (this.getEnemiesByType("ChaserShip").length < 5) {
-            enemy = new ChaserShip(
-              this,
-              Phaser.Math.Between(0, this.game.config.width),
-              0
-            );
+
+          if (enemy !== null) {
+            this.enemies.add(enemy);
           }
-        } else {
-          enemy = new CarrierShip(
-            this,
-            Phaser.Math.Between(0, this.game.config.width),
-            0
-          );
-        }
-
-        if (enemy !== null) {
-          // enemy.setScale(Phaser.Math.Between(10, 20) * 0.1);
-          this.enemies.add(enemy);
         }
       },
+
       callbackScope: this,
       loop: true,
     });
@@ -315,26 +383,34 @@ export default class SceneMain extends Phaser.Scene {
     if (!this.player.getData("isDead")) {
       this.player.update();
 
-      if (this.cursorKeys.up.isDown) {
-        this.player.moveUp();
-      } else if (this.cursorKeys.down.isDown) {
-        this.player.moveDown();
-      }
+      const moving = this.player.getData("isMoving");
 
-      if (this.cursorKeys.left.isDown) {
+      if (moving === "left" && !this.player.getData("isBankingRight")) {
         this.player.moveLeft();
-      } else if (this.cursorKeys.right.isDown) {
+      } else if (moving === "right" && !this.player.getData("isBankingLeft")) {
         this.player.moveRight();
       }
 
-      if (
-        this.cursorKeys.up.isUp ||
-        this.cursorKeys.down.isUp ||
-        this.cursorKeys.left.isUp ||
-        this.cursorKeys.right.isUp
-      ) {
-        this.player.resetMovement();
-      }
+      // if (this.cursorKeys.up.isDown) {
+      //   this.player.moveUp();
+      // } else if (this.cursorKeys.down.isDown) {
+      //   this.player.moveDown();
+      // }
+
+      // if (this.cursorKeys.left.isDown) {
+      //   // this.player.moveLeft();
+      // } else if (this.cursorKeys.right.isDown) {
+      //   // this.player.moveRight();
+      // }
+
+      // if (
+      //   this.cursorKeys.up.isUp ||
+      //   this.cursorKeys.down.isUp ||
+      //   this.cursorKeys.left.isUp ||
+      //   this.cursorKeys.right.isUp
+      // ) {
+      //   this.player.resetMovement();
+      // }
 
       if (this.keySpace.isDown) {
         this.player.setData("isShooting", true);
@@ -383,8 +459,8 @@ export default class SceneMain extends Phaser.Scene {
       }
     }
 
-    for (var i = 0; i < this.playerLasers.getChildren().length; i++) {
-      var laser = this.playerLasers.getChildren()[i];
+    for (let i = 0; i < this.playerLasers.getChildren().length; i++) {
+      const laser = this.playerLasers.getChildren()[i];
       laser.update();
 
       if (
@@ -399,15 +475,15 @@ export default class SceneMain extends Phaser.Scene {
       }
     }
 
-    for (var i = 0; i < this.backgrounds.length; i++) {
+    for (let i = 0; i < this.backgrounds.length; i++) {
       this.backgrounds[i].update();
     }
   }
 
   getEnemiesByType(type) {
-    var arr = [];
-    for (var i = 0; i < this.enemies.getChildren().length; i++) {
-      var enemy = this.enemies.getChildren()[i];
+    const arr = [];
+    for (let i = 0; i < this.enemies.getChildren().length; i++) {
+      const enemy = this.enemies.getChildren()[i];
       if (enemy.getData("type") == type) {
         arr.push(enemy);
       }

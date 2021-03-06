@@ -22,11 +22,6 @@ class Entity extends Phaser.GameObjects.Sprite {
       this.setScale(getRandomArbitrary(0.8, 1.1));
       this.play("explosion"); // play the animation
 
-      // pick a random explosion sound within the array we defined in this.sfx in SceneMain
-      //   this.scene.sfx.explosions[
-      //     Phaser.Math.Between(0, this.scene.sfx.explosions.length - 1)
-      //   ].play();
-
       if (this.shootTimer !== undefined) {
         if (this.shootTimer) {
           this.shootTimer.remove(false);
@@ -63,19 +58,52 @@ export class Player extends Entity {
     this.setData("isShooting", false);
     this.setData("timerShootDelay", 10);
     this.setData("timerShootTick", this.getData("timerShootDelay") - 1);
+    this.setData("isBankingLeft", false);
+    this.setData("isBankingRight", false);
+    this.setData("isMoving", null);
 
     this.play("sprPlayer");
   }
 
   bankLeft() {
-    console.log("satrt anim");
+    this.setData("isBankingLeft", true);
+    this.setData("isBankingRight", false);
     this.play("sprPlayerBankLeft");
-    this.setData("direction", "left");
   }
 
   bankRight() {
+    console.log("BankRight");
+    this.setData("isBankingLeft", false);
+    this.setData("isBankingRight", true);
     this.play("sprPlayerBankRight");
-    this.setData("direction", "right");
+  }
+
+  straighten() {
+    if (
+      this.anims.isPlaying &&
+      this.anims.currentAnim.key === "sprPlayerBankLeft"
+    ) {
+      this.setData("isBankingLeft", false);
+      this.play("sprPlayer");
+    }
+
+    if (
+      this.anims.isPlaying &&
+      this.anims.currentAnim.key === "sprPlayerBankRight"
+    ) {
+      this.setData("isBankingRight", false);
+      this.play("sprPlayer");
+    }
+
+    if (this.getData("isMoving") === "left") {
+      this.play("sprPlayerCenterLeft");
+      this.setData("isMoving", null);
+      // this.setData("isBankingLeft", false);
+    } else if (this.getData("isMoving") === "right") {
+      this.play("sprPlayerCenterRight");
+      this.setData("isMoving", null);
+      // this.setData("isBankingRight", false);
+    }
   }
 
   moveUp() {
@@ -87,26 +115,11 @@ export class Player extends Entity {
   }
 
   moveLeft() {
-    if (this.getData("direction") !== "left") {
-      this.bankLeft();
-    }
     this.body.velocity.x = -this.getData("speed");
   }
 
   moveRight() {
-    if (this.getData("direction") !== "right") {
-      this.bankRight();
-    }
     this.body.velocity.x = this.getData("speed");
-  }
-
-  resetMovement() {
-    // if (this.getData("direction") === "left") {
-    //   this.play("sprPlayerCenterLeft");
-    // } else if (this.getData("direction") === "right") {
-    //   this.play("sprPlayerCenterRight");
-    // }
-    this.setData("direction", null);
   }
 
   update() {
@@ -121,7 +134,8 @@ export class Player extends Entity {
         this.setData("timerShootTick", this.getData("timerShootTick") + 1); // every game update, increase timerShootTick by one until we reach the value of timerShootDelay
       } else {
         // when the "manual timer" is triggered:
-        var laser = new PlayerLaser(this.scene, this.x, this.y);
+        var laser = new PlayerLaser(this.scene, this.x, this.y - 50);
+        laser.setScale(this.scaleX);
         this.scene.playerLasers.add(laser);
 
         this.scene.sfx.laser.play(); // play the laser sound effect
@@ -133,8 +147,8 @@ export class Player extends Entity {
 
 export class PlayerLaser extends Entity {
   constructor(scene, x, y) {
-    super(scene, x, y, "sprLaserPlayer");
-    this.body.velocity.y = -200;
+    super(scene, x, y, "player_bullet");
+    this.body.velocity.y = -300;
   }
 }
 
@@ -183,12 +197,12 @@ export class ChaserShip extends Entity {
 }
 
 export class GunShip extends Entity {
-  constructor(scene, x, y) {
+  constructor(scene, x, y, speed) {
     super(scene, x, y, "sprEnemy0", "GunShip");
     this.setScale(0.5);
     this.play("sprEnemy0");
 
-    this.body.velocity.y = Phaser.Math.Between(50, 100);
+    this.body.velocity.y = speed;
 
     this.shootTimer = this.scene.time.addEvent({
       delay: 2000,
